@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { 
   Check, X, Loader2, LogOut, Search, Filter, 
   TrendingUp, Users, AlertCircle, Mail, Clock, 
-  Activity, MessageCircle, ShieldAlert, Server, Zap, Crown, Send
+  Activity, MessageCircle, ShieldAlert, Server, Zap, Crown, Send, Calendar
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,9 +25,12 @@ type Lead = {
   phone?: string; // Added phone for WhatsApp integration
   status: 'pending' | 'approved' | 'rejected' | 'waitlisted';
   priority_score: number;
+  source?: string; // To distinguish Demo Requests vs Partner Apps
   metadata?: { 
     docket_size?: string;
     application_type?: string;
+    scheduled_date?: string;
+    scheduled_time?: string;
   };
 };
 
@@ -160,9 +163,9 @@ function CommandCenter() {
     const latency = Date.now() - start;
     
     if (error) {
-        setSystemHealth({ db: 'ERROR', api: 'OFFLINE', status: 'CRITICAL', errorRate: 'N/A' });
+        setSystemHealth({ db: 'ERROR', api: 'OFFLINE', status: 'CRITICAL', errorRate: 'HIGH' });
     } else {
-        setSystemHealth({ db: 'CONNECTED', api: `${latency}ms`, status: 'OPERATIONAL', errorRate: 'N/A' });
+        setSystemHealth({ db: 'CONNECTED', api: `${latency}ms`, status: 'OPERATIONAL', errorRate: 'LOW' });
     }
   };
 
@@ -238,16 +241,31 @@ function CommandCenter() {
   };
 
   const handleWhatsApp = (phone: string | undefined, name: string) => {
-      if (!phone) {
-          alert("No phone number provided for this lead.");
-          return;
-      }
-      // Clean number string
-      const cleanPhone = phone.replace(/\D/g, ''); 
-      // Pre-filled message
-      const text = `Hello ${name}, this is regarding your application to the Donna AI Partner Program. We have reviewed your firm's profile...`;
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
-  };
+    if (!phone) {
+        alert("No phone number provided for this lead.");
+        return;
+    }
+
+    // 1. Strict Cleaning: Remove EVERYTHING that is not a number 0-9
+    let cleanPhone = phone.replace(/[^\d]/g, ''); 
+
+    // 2. Smart Formatting for India
+    // If it's 10 digits (e.g., 9876543210), add 91
+    if (cleanPhone.length === 10) {
+        cleanPhone = '91' + cleanPhone;
+    }
+    // If it starts with 0, remove it
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.slice(1);
+    }
+
+    // 3. Construct URL
+    const text = `Hello ${name}, this is the Donna AI team. We have reviewed your application...`;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+    
+    console.log("Opening WhatsApp:", url); // Debugging log
+    window.open(url, '_blank');
+};
 
   const toggleSelect = (id: string) => {
     if (selectedLeads.includes(id)) setSelectedLeads(selectedLeads.filter(i => i !== id));
@@ -371,7 +389,7 @@ function CommandCenter() {
                             </th>
                             <th className="p-4 border-b dark:border-white/5">Score</th>
                             <th className="p-4 border-b dark:border-white/5">Identity</th>
-                            <th className="p-4 border-b dark:border-white/5">Docket Info</th>
+                            <th className="p-4 border-b dark:border-white/5">Request Type</th>
                             <th className="p-4 border-b dark:border-white/5">Status</th>
                             <th className="p-4 border-b dark:border-white/5 text-right">Quick Actions</th>
                         </tr>
@@ -414,14 +432,29 @@ function CommandCenter() {
                                     )}
                                 </td>
 
-                                {/* Metadata */}
+                                {/* Request Type & Metadata */}
                                 <td className="p-4">
-                                    {lead.metadata?.docket_size ? (
-                                        <span className="px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded border border-blue-500/20 whitespace-nowrap">
-                                            {lead.metadata.docket_size}
-                                        </span>
+                                    {/* INTELLIGENT DISPLAY based on SOURCE */}
+                                    {lead.source === 'demo_scheduler' ? (
+                                        <div className="flex flex-col items-start">
+                                            <span className="px-2 py-1 bg-blue-500/10 text-blue-500 text-[10px] font-bold rounded border border-blue-500/20 mb-1 flex items-center gap-1">
+                                                <Calendar size={10} /> DEMO REQUEST
+                                            </span>
+                                            {lead.metadata?.scheduled_date && (
+                                                <span className="text-xs font-mono text-slate-500">
+                                                    {lead.metadata.scheduled_date} @ {lead.metadata.scheduled_time}
+                                                </span>
+                                            )}
+                                        </div>
                                     ) : (
-                                        <span className="text-slate-400 text-[10px]">-</span>
+                                        <div className="flex flex-col items-start">
+                                            <span className="px-2 py-1 bg-amber-500/10 text-amber-600 text-[10px] font-bold rounded border border-amber-500/20 mb-1 flex items-center gap-1">
+                                                <Crown size={10} /> PARTNER APP
+                                            </span>
+                                            {lead.metadata?.docket_size && (
+                                                <span className="text-xs text-slate-500">{lead.metadata.docket_size}</span>
+                                            )}
+                                        </div>
                                     )}
                                 </td>
 
@@ -506,7 +539,7 @@ const StatCard = ({ label, value, icon: Icon, color }: any) => (
         <div className={`p-3 rounded-xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color} relative z-10`}>
             <Icon size={20} />
         </div>
-        {/* Hover Glow */}
+        {/* Hover Glow Effect */}
         <div className={`absolute inset-0 bg-opacity-5 ${color.replace('text-', 'bg-')} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
     </div>
 );

@@ -4,44 +4,25 @@ import { motion, useScroll, useTransform, useInView, Variants } from "framer-mot
 import { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import PartnershipModal from "@/components/PartnershipModal";
 import { 
   Shield, Bot, Briefcase, CheckCircle, ArrowRight, Zap, Activity, 
-  UploadCloud, Check, Star, Crown, Smartphone 
+  UploadCloud, Check, Star, Crown, Smartphone, Mail, MapPin, Globe 
 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+// --- LAZY LOAD MODALS (Performance Optimization) ---
+// These load only when the page is idle, keeping the initial load fast
+const PartnershipModal = dynamic(() => import("@/components/PartnershipModal"), { ssr: false });
+const BookDemoModal = dynamic(() => import("@/components/BookDemoModal"), { ssr: false });
 
 // --- CONSTANTS ---
 const TESTIMONIAL_DATA = [
-  {
-      text: "It almost feels illegal to draft this fast. I finished a provisional specification before my chai got cold. My billing hours might drop, but my sanity is at an all-time high.",
-      author: "You (Probably)",
-      role: "After using Draft Factory"
-  },
-  {
-      text: "My biggest corporate client asked how we manage to update their portfolio status at 2 AM. I didn't have the heart to tell them I was asleep and Donna did it.",
-      author: "Future You",
-      role: "After enabling Client Pulse"
-  },
-  {
-      text: "Breaking up with my Excel sheets was emotional, but necessary. Donna organizes my chaos better than I ever could. It’s like having a super-organized partner who never sleeps.",
-      author: "You",
-      role: "1 Week after Migration"
-  },
-  {
-      text: "Donna is the only associate in my firm who works weekends, never complains about the workload, and doesn't ask for a Diwali bonus. Don't tell my juniors I said that.",
-      author: "You (Secretly)",
-      role: "Managing Partner"
-  },
-  {
-      text: "I walked into a pitch meeting with an iPad showing their live portfolio analytics. The other firm walked in with a printed spreadsheet. Guess who won the retainer?",
-      author: "You",
-      role: "Closing a Deal"
-  },
-  {
-      text: "I used to check the IPO website 5 times a day out of paranoia. Now I just wait for the Donna notification. It's the best sleep insurance I've ever bought.",
-      author: "You",
-      role: "Relaxing on a Sunday"
-  }
+  { text: "It almost feels illegal to draft this fast. I finished a provisional specification before my chai got cold.", author: "You (Probably)", role: "After using Draft Factory" },
+  { text: "My biggest corporate client asked how we manage to update their portfolio status at 2 AM. Donna did it.", author: "Future You", role: "After enabling Client Pulse" },
+  { text: "Breaking up with my Excel sheets was emotional, but necessary. Donna organizes my chaos better than I ever could.", author: "You", role: "1 Week after Migration" },
+  { text: "Donna is the only associate in my firm who works weekends, never complains, and doesn't ask for a bonus.", author: "You (Secretly)", role: "Managing Partner" },
+  { text: "I walked into a pitch with live analytics. The other firm walked in with a spreadsheet. Guess who won?", author: "You", role: "Closing a Deal" },
+  { text: "I used to check the IPO website 5 times a day. Now I just wait for the notification. Sleep insurance.", author: "You", role: "Relaxing on a Sunday" }
 ];
 
 // --- ANIMATION VARIANTS ---
@@ -65,10 +46,11 @@ export default function Home() {
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
-  // --- MODAL STATE ---
+  // --- MODAL STATES ---
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
-  // --- SMART LOADER LOGIC ---
+  // --- SMART INTEGRATION LOADER LOGIC ---
   const integrationRef = useRef(null);
   const isIntegrationInView = useInView(integrationRef, { once: true, amount: 0.5 }); 
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -80,6 +62,7 @@ export default function Home() {
       setUploadStatus("INITIALIZING SECURE CONNECTION...");
       
       const timer = setInterval(() => {
+        // Non-linear progress simulation
         const increment = currentProgress < 30 ? 2 : currentProgress < 80 ? 0.5 : 5;
         currentProgress += increment;
 
@@ -100,7 +83,7 @@ export default function Home() {
     }
   }, [isIntegrationInView]);
 
-  // --- ROI STATE ---
+  // --- ROI CALCULATOR STATE ---
   const [attorneys, setAttorneys] = useState(5);
   const [rate, setRate] = useState(4000);
   const [hours, setHours] = useState(20);
@@ -116,7 +99,7 @@ export default function Home() {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // REAL API CALL
+      // Sends data to Supabase via API Route
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,12 +121,11 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] dark:bg-[#020205] selection:bg-brand-purple selection:text-white overflow-hidden font-sans text-slate-900 dark:text-white">
-      <Navbar />
+      {/* Navbar gets the Demo Handler to make the button work */}
+      <Navbar onBookDemo={() => setIsDemoOpen(true)} />
       
-      {/* NOISE OVERLAY */}
+      {/* BACKGROUND FX */}
       <div className="fixed inset-0 pointer-events-none z-[50] opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }}></div>
-
-      {/* DYNAMIC BACKGROUND */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-brand-purple/20 blur-[100px] animate-blob"></div>
@@ -153,43 +135,29 @@ export default function Home() {
       {/* --- 1. HERO SECTION --- */}
       <section ref={targetRef} className="relative pt-36 pb-16 lg:pt-52 lg:pb-32 text-center z-10 px-6">
         <motion.div style={{ y, opacity }} className="max-w-5xl mx-auto">
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} 
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm mb-8 hover:scale-105 transition-transform cursor-default"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-cyan opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-cyan"></span>
-            </span>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm mb-8 cursor-default">
+            <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-cyan opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-brand-cyan"></span></span>
             <span className="text-xs font-bold tracking-widest text-slate-600 dark:text-slate-300 uppercase">IPO Auto-Sync Active</span>
           </motion.div>
 
-          <motion.h1 
-            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl sm:text-7xl md:text-9xl font-extrabold tracking-tighter leading-[1.1] mb-8"
-          >
+          <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: "easeOut" }} className="text-5xl sm:text-7xl md:text-9xl font-extrabold tracking-tighter leading-[1.1] mb-8">
             Command Your <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-purple bg-[length:200%_auto] animate-flow">
               Patent Empire.
             </span>
           </motion.h1>
 
-          <motion.p 
-            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
-          >
-            The intelligence platform for high-growth IPR firms. 
+          <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-lg md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+            The intelligent platform for high-growth IPR firms. 
             Automate <strong className="text-slate-900 dark:text-white">docketing</strong>, accelerate <strong className="text-slate-900 dark:text-white">drafting</strong>, and own your data.
           </motion.p>
 
-          <motion.div 
-            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6"
-          >
-            <a href="#contact" className="group relative px-8 py-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-lg shadow-xl hover:scale-105 transition-all overflow-hidden flex items-center justify-center gap-2">
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }} className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+            {/* Book Demo Trigger */}
+            <button onClick={() => setIsDemoOpen(true)} className="group relative px-8 py-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-lg shadow-xl hover:scale-105 transition-all overflow-hidden flex items-center justify-center gap-2">
               <div className="absolute inset-0 bg-gradient-to-r from-brand-purple to-brand-cyan opacity-0 group-hover:opacity-20 transition-opacity"></div>
               <span>Request Access</span> <ArrowRight size={18} />
-            </a>
+            </button>
             <a href="#integration" className="px-8 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 font-medium text-lg transition-all flex items-center justify-center">
               View Architecture
             </a>
@@ -197,30 +165,16 @@ export default function Home() {
         </motion.div>
 
         {/* 3D DASHBOARD PARALLAX */}
-        <motion.div 
-          initial={{ opacity: 0, rotateX: 20, y: 100 }}
-          animate={{ opacity: 1, rotateX: 0, y: 0 }}
-          transition={{ duration: 1.2, delay: 0.5, type: "spring" }}
-          className="mt-24 max-w-6xl mx-auto perspective-1000 hidden md:block"
-        >
+        <motion.div initial={{ opacity: 0, rotateX: 20, y: 100 }} animate={{ opacity: 1, rotateX: 0, y: 0 }} transition={{ duration: 1.2, delay: 0.5, type: "spring" }} className="mt-24 max-w-6xl mx-auto perspective-1000 hidden md:block">
           <div className="relative rounded-2xl p-2 bg-gradient-to-b from-white/40 to-transparent dark:from-white/10 dark:to-transparent backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl">
              <div className="rounded-xl bg-slate-50 dark:bg-[#0A0A0F] border border-slate-200 dark:border-white/5 aspect-[16/9] flex flex-col items-center justify-center relative overflow-hidden group">
                 <div className="absolute top-8 left-8 right-8 flex justify-between items-center opacity-50">
                     <div className="h-2 w-32 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
-                    <div className="flex gap-2">
-                        <div className="h-2 w-8 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
-                        <div className="h-2 w-8 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
-                    </div>
+                    <div className="flex gap-2"><div className="h-2 w-8 bg-slate-200 dark:bg-slate-800 rounded-full"></div><div className="h-2 w-8 bg-slate-200 dark:bg-slate-800 rounded-full"></div></div>
                 </div>
                 <div className="text-center space-y-6 z-10">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-brand-cyan blur-[40px] opacity-20 animate-pulse"></div>
-                        <Bot size={64} className="relative text-slate-900 dark:text-white mx-auto" />
-                    </div>
-                    <div className="space-y-2">
-                        <div className="text-slate-500 font-mono text-sm tracking-widest">NEURAL ENGINE ACTIVE</div>
-                        <div className="text-brand-purple font-bold text-2xl">Generating Claim Set 4...</div>
-                    </div>
+                    <div className="relative"><div className="absolute inset-0 bg-brand-cyan blur-[40px] opacity-20 animate-pulse"></div><Bot size={64} className="relative text-slate-900 dark:text-white mx-auto" /></div>
+                    <div className="space-y-2"><div className="text-slate-500 font-mono text-sm tracking-widest">NEURAL ENGINE ACTIVE</div><div className="text-brand-purple font-bold text-2xl">Generating Claim Set 4...</div></div>
                 </div>
                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-brand-purple/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-[3s] ease-in-out"></div>
              </div>
@@ -231,52 +185,27 @@ export default function Home() {
       {/* --- 2. FEATURES SECTION --- */}
       <section id="features" className="py-24 lg:py-32 relative z-10">
         <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
-              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
-              className="mb-16 md:mb-24 text-center"
-            >
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="mb-16 md:mb-24 text-center">
                 <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold mb-6">The <span className="text-slate-400">Unfair Advantage</span></motion.h2>
                 <motion.p variants={fadeInUp} className="text-slate-500 max-w-2xl mx-auto">Don't let manual docketing slow down your firm's growth. Automate the boring stuff.</motion.p>
             </motion.div>
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <SpotlightCard className="p-8 md:p-10 h-full">
-                    <div className="w-12 h-12 bg-brand-purple/10 rounded-xl flex items-center justify-center mb-8 text-brand-purple"><Shield size={24} /></div>
-                    <h3 className="text-xl md:text-2xl font-bold mb-4">Ironclad Docketing</h3>
-                    <p className="text-slate-500 leading-relaxed text-sm md:text-base">We scrape the IPO database directly. If a status changes at 3 AM, you know by 3:01 AM. Never miss a hearing.</p>
-                </SpotlightCard>
-                <SpotlightCard className="p-8 md:p-10 h-full">
-                    <div className="w-12 h-12 bg-brand-cyan/10 rounded-xl flex items-center justify-center mb-8 text-brand-cyan"><Zap size={24} /></div>
-                    <h3 className="text-xl md:text-2xl font-bold mb-4">AI Draft Factory</h3>
-                    <p className="text-slate-500 leading-relaxed text-sm md:text-base">Upload an IDF and generate a First Draft (FoF) in minutes, not days. Impress clients with speed.</p>
-                </SpotlightCard>
-                <SpotlightCard className="p-8 md:p-10 h-full">
-                    <div className="w-12 h-12 bg-brand-amber/10 rounded-xl flex items-center justify-center mb-8 text-brand-amber"><Activity size={24} /></div>
-                    <h3 className="text-xl md:text-2xl font-bold mb-4">Client Pulse</h3>
-                    <p className="text-slate-500 leading-relaxed text-sm md:text-base">Stop sending Excel sheets. Give clients a premium login to view their portfolio status 24/7.</p>
-                </SpotlightCard>
+                <SpotlightCard className="p-8 md:p-10 h-full"><div className="w-12 h-12 bg-brand-purple/10 rounded-xl flex items-center justify-center mb-8 text-brand-purple"><Shield size={24} /></div><h3 className="text-xl md:text-2xl font-bold mb-4">Ironclad Docketing</h3><p className="text-slate-500 text-sm md:text-base">We scrape the IPO database directly. If a status changes at 3 AM, you know by 3:01 AM. Never miss a hearing.</p></SpotlightCard>
+                <SpotlightCard className="p-8 md:p-10 h-full"><div className="w-12 h-12 bg-brand-cyan/10 rounded-xl flex items-center justify-center mb-8 text-brand-cyan"><Zap size={24} /></div><h3 className="text-xl md:text-2xl font-bold mb-4">AI Draft Factory</h3><p className="text-slate-500 text-sm md:text-base">Upload an IDF and generate a First Draft (FoF) in minutes, not days. Impress clients with speed.</p></SpotlightCard>
+                <SpotlightCard className="p-8 md:p-10 h-full"><div className="w-12 h-12 bg-brand-amber/10 rounded-xl flex items-center justify-center mb-8 text-brand-amber"><Activity size={24} /></div><h3 className="text-xl md:text-2xl font-bold mb-4">Client Pulse</h3><p className="text-slate-500 text-sm md:text-base">Give clients a premium login to view their portfolio status 24/7. Transparency builds trust.</p></SpotlightCard>
             </div>
         </div>
       </section>
 
-      {/* --- 3. SEAMLESS INTEGRATION (DYNAMIC LOADER) --- */}
+      {/* --- 3. SEAMLESS INTEGRATION (Dynamic Loader) --- */}
       <section id="integration" ref={integrationRef} className="py-24 lg:py-32 border-y border-slate-200 dark:border-white/5 bg-slate-100/50 dark:bg-white/[0.01]">
          <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-start">
              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="sticky top-32">
-                 <motion.div variants={fadeInUp} className="inline-block mb-4">
-                    <span className="bg-brand-purple/10 text-brand-purple text-xs font-bold px-3 py-1 rounded-md">ZERO DOWNTIME</span>
-                 </motion.div>
+                 <motion.div variants={fadeInUp} className="inline-block mb-4"><span className="bg-brand-purple/10 text-brand-purple text-xs font-bold px-3 py-1 rounded-md">ZERO DOWNTIME</span></motion.div>
                  <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold mb-6">Seamless <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-purple bg-[length:200%_auto] animate-flow">Integration</span></motion.h2>
-                 <motion.p variants={fadeInUp} className="text-slate-500 mb-10 text-lg leading-relaxed">
-                    Your current Excel sheets are costing you money. Import your legacy data into Donna and let our bots verify every single deadline against the IPO database instantly.
-                 </motion.p>
-                 
+                 <motion.p variants={fadeInUp} className="text-slate-500 mb-10 text-lg leading-relaxed">Your current Excel sheets are costing you money. Import your legacy data into Donna and let our bots verify every single deadline against the IPO database instantly.</motion.p>
                  <div className="space-y-8 relative pl-6 border-l-2 border-slate-200 dark:border-white/10 ml-3">
-                    {[
-                      { title: "Import Legacy Data", desc: "Drag & drop your existing Excel/CSV docket." },
-                      { title: "Neural Verification", desc: "Our AI cross-references every application number with the IPO." },
-                      { title: "Live Dashboard", desc: "Deadlines are auto-calculated. You are live in minutes." }
-                    ].map((s, i) => (
+                    {[{ title: "Import Legacy Data", desc: "Drag & drop existing Excel/CSV docket." }, { title: "Neural Verification", desc: "Our AI cross-references every application number with the IPO." }, { title: "Live Dashboard", desc: "Deadlines are auto-calculated. You are live in minutes." }].map((s, i) => (
                       <motion.div key={i} variants={fadeInUp} className="relative pl-8 group cursor-pointer">
                         <div className="absolute -left-[33px] top-0 w-8 h-8 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-white/20 flex items-center justify-center font-bold text-xs z-10 group-hover:border-brand-purple group-hover:text-brand-purple transition-colors shadow-lg">{i + 1}</div>
                         <h4 className="font-bold text-lg group-hover:text-brand-purple transition-colors">{s.title}</h4>
@@ -285,33 +214,16 @@ export default function Home() {
                     ))}
                  </div>
              </motion.div>
-
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}
-               className="bg-white dark:bg-[#0A0A0F] border border-slate-200 dark:border-white/10 p-8 md:p-12 rounded-3xl text-center relative shadow-2xl backdrop-blur-md mt-8 md:mt-0"
-             >
+             <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="bg-white dark:bg-[#0A0A0F] border border-slate-200 dark:border-white/10 p-8 md:p-12 rounded-3xl text-center relative shadow-2xl backdrop-blur-md mt-8 md:mt-0">
                   <div className="absolute inset-0 bg-grid-pattern opacity-20 rounded-3xl"></div>
                   <div className="relative z-10 mb-8">
-                      {uploadProgress < 100 ? (
-                          <div className="w-24 h-24 mx-auto bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center animate-pulse">
-                              <UploadCloud size={40} className="text-slate-400" />
-                          </div>
-                      ) : (
-                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-24 h-24 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
-                              <CheckCircle size={48} className="text-green-500" />
-                          </motion.div>
-                      )}
+                      {uploadProgress < 100 ? <div className="w-24 h-24 mx-auto bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center animate-pulse"><UploadCloud size={40} className="text-slate-400" /></div> : <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-24 h-24 mx-auto bg-green-500/10 rounded-full flex items-center justify-center"><CheckCircle size={48} className="text-green-500" /></motion.div>}
                   </div>
                   <div className="font-bold text-2xl mb-2 relative z-10 text-slate-900 dark:text-white">{uploadProgress < 100 ? "Importing Docket..." : "Integration Complete"}</div>
                   <div className="mt-8 h-4 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden relative z-10">
                       <motion.div className="h-full bg-gradient-to-r from-brand-purple to-brand-cyan" initial={{ width: "0%" }} animate={{ width: `${uploadProgress}%` }} transition={{ ease: "linear", duration: 0.1 }} />
                   </div>
-                  <div className="flex justify-between items-center text-xs text-slate-500 mt-4 font-mono relative z-10 uppercase tracking-wider">
-                      <span className={uploadProgress === 100 ? "text-green-500 font-bold" : "text-brand-purple animate-pulse"}>{uploadStatus}</span>
-                      <span>{Math.floor(uploadProgress)}%</span>
-                  </div>
-                  
-                  {/* Simulated Terminal */}
+                  <div className="flex justify-between items-center text-xs text-slate-500 mt-4 font-mono relative z-10 uppercase tracking-wider"><span className={uploadProgress === 100 ? "text-green-500 font-bold" : "text-brand-purple animate-pulse"}>{uploadStatus}</span><span>{Math.floor(uploadProgress)}%</span></div>
                   <div className="mt-8 text-left bg-slate-900 rounded-lg p-4 font-mono text-[10px] text-slate-400 h-32 overflow-hidden relative">
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900 z-10"></div>
                         <div className="space-y-1">
@@ -327,7 +239,7 @@ export default function Home() {
          </div>
       </section>
 
-      {/* --- 4. PARTNER PROGRAM (GOLD CARD) --- */}
+      {/* --- 4. PARTNER PROGRAM (Gold Card) --- */}
       <section className="py-32 relative px-6">
         <div className="max-w-5xl mx-auto">
             <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border border-amber-500/20 bg-[#050505]">
@@ -344,13 +256,12 @@ export default function Home() {
                         We are selecting 20 forward-thinking IPR Firms for white-glove onboarding, custom feature requests, and zero migration costs.
                     </p>
                     <div className="flex flex-col items-center gap-6">
-                        {/* Triggers the Exclusive Modal */}
+                        {/* Trigger Partner Modal */}
                         <button 
                             onClick={() => setIsPartnerModalOpen(true)}
                             className="px-12 py-4 bg-gradient-to-b from-amber-400 to-amber-600 rounded-xl text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(245,158,11,0.3)] flex items-center gap-2"
                         >
-                            <Crown size={20} className="text-black" />
-                            Apply for Partnership
+                            <Crown size={20} /> Apply for Partnership
                         </button>
 
                         <div className="flex items-center gap-3 text-sm font-mono bg-white/5 border border-white/10 rounded-lg px-4 py-2">
@@ -366,7 +277,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- 5. TESTIMONIALS (INFINITE LOOP) --- */}
+      {/* --- 5. TESTIMONIALS (Infinite Loop) --- */}
       <section className="py-24 overflow-hidden border-y border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01]">
         <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">What You'll Say <span className="text-brand-purple">Next Month</span></h2>
@@ -404,7 +315,7 @@ export default function Home() {
                         <li className="flex gap-3"><Check size={18} className="text-green-500" /> 50 AI Credits</li>
                         <li className="flex gap-3"><Check size={18} className="text-green-500" /> Email Support</li>
                     </ul>
-                    <a href="#contact" className="w-full block text-center py-3 rounded-lg border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors font-bold">Select Solo</a>
+                    <button onClick={() => setIsDemoOpen(true)} className="w-full block text-center py-3 rounded-lg border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors font-bold">Select Solo</button>
                 </SpotlightCard>
 
                 {/* Team (Popular) */}
@@ -419,7 +330,7 @@ export default function Home() {
                             <li className="flex gap-3"><Check size={18} className="text-brand-purple" /> Client Portal Access</li>
                             <li className="flex gap-3"><Check size={18} className="text-brand-purple" /> Priority Support</li>
                         </ul>
-                        <a href="#contact" className="w-full block text-center py-3 rounded-lg bg-gradient-to-r from-brand-purple to-brand-cyan text-white font-bold hover:shadow-lg transition-shadow">Get Started</a>
+                        <button onClick={() => setIsDemoOpen(true)} className="w-full block text-center py-3 rounded-lg bg-gradient-to-r from-brand-purple to-brand-cyan text-white font-bold hover:shadow-lg transition-shadow">Get Started</button>
                     </div>
                 </div>
 
@@ -432,7 +343,7 @@ export default function Home() {
                         <li className="flex gap-3"><Check size={18} className="text-green-500" /> Custom API Integrations</li>
                         <li className="flex gap-3"><Check size={18} className="text-green-500" /> SLA & Account Manager</li>
                     </ul>
-                    <a href="#contact" className="w-full block text-center py-3 rounded-lg border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors font-bold">Contact Sales</a>
+                    <button onClick={() => setIsDemoOpen(true)} className="w-full block text-center py-3 rounded-lg border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors font-bold">Contact Sales</button>
                 </SpotlightCard>
             </div>
         </div>
@@ -476,13 +387,11 @@ export default function Home() {
          </div>
       </section>
 
-      {/* --- 8. CONTACT FORM --- */}
+      {/* --- 8. CONTACT FORM (Main) --- */}
       <section id="contact" className="py-32 relative">
          <div className="max-w-3xl mx-auto px-6 relative z-10">
              <div className="bg-white dark:bg-[#0A0A0F] border border-slate-200 dark:border-white/10 p-10 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden">
-                 {/* Subtle gradient glow */}
                  <div className="absolute top-0 right-0 w-64 h-64 bg-brand-purple/5 rounded-full blur-[80px] -z-10"></div>
-
                  <div className="text-center mb-10">
                     <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">Request Access</h2>
                     <p className="text-slate-500">Join the waitlist. We verify every firm manually to ensure security.</p>
@@ -505,7 +414,7 @@ export default function Home() {
                          </div>
                          <div className="space-y-2">
                              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Phone (WhatsApp)</label>
-                             {/* ADDED PHONE FIELD */}
+                             {/* ADDED PHONE FIELD for Admin WhatsApp Action */}
                              <input name="phone" required placeholder="+91..." className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all" />
                          </div>
                       </div>
@@ -534,22 +443,20 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
             <div className="grid md:grid-cols-4 gap-12 mb-16">
                 <div className="col-span-1">
-                    <span className="text-2xl font-bold">DONNA<span className="text-brand-purple text-sm align-top">AI</span></span>
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">DONNA<span className="text-brand-purple text-sm align-top">AI</span></span>
                     <p className="text-slate-500 text-sm mt-4 leading-relaxed">The patent management platform for the next generation of Indian Intellectual Property firms.</p>
                 </div>
-                <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Platform</h4><ul className="space-y-3 text-sm text-slate-500"><li><a href="#" className="hover:text-brand-purple">Auto-Docketing</a></li><li><a href="#" className="hover:text-brand-purple">AI Drafting</a></li></ul></div>
-                <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Company</h4><ul className="space-y-3 text-sm text-slate-500"><li><a href="#" className="hover:text-brand-purple">About Us</a></li><li><a href="#" className="hover:text-brand-purple">Contact</a></li></ul></div>
-                <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Newsletter</h4><div className="flex gap-2"><input type="email" placeholder="Email" className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm w-full focus:outline-none" /><button className="bg-brand-purple text-white px-4 py-2 rounded-lg text-sm font-bold">Go</button></div></div>
+                <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Platform</h4><ul className="space-y-3 text-sm text-slate-500"><li><a href="#features" className="hover:text-brand-purple">Auto-Docketing</a></li><li><a href="#features" className="hover:text-brand-purple">AI Drafting</a></li><li><a href="#pricing" className="hover:text-brand-purple">Pricing</a></li><li><a href="/admin" className="hover:text-brand-purple">Login</a></li></ul></div>
+                <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Company</h4><ul className="space-y-3 text-sm text-slate-500"><li><a href="/about" className="hover:text-brand-purple">About Us</a></li><li><a href="#contact" className="hover:text-brand-purple">Contact</a></li><li><a href="/legal/privacy" className="hover:text-brand-purple">Privacy Policy</a></li><li><a href="/legal/terms" className="hover:text-brand-purple">Terms of Service</a></li></ul></div>
+                <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Contact</h4><ul className="space-y-3 text-sm text-slate-500"><li><span className="text-slate-900 dark:text-white font-medium">Email:</span> <a href="mailto:team@donna-ai.in" className="hover:text-brand-purple">team@donna-ai.in</a></li><li><span className="text-slate-900 dark:text-white font-medium">Phone:</span> <a href="tel:+919625818967" className="hover:text-brand-purple">+91-9625818967</a></li><li><span className="text-slate-900 dark:text-white font-medium">HQ:</span> Gurgaon, India</li></ul></div>
             </div>
-            <div className="border-t border-slate-200 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p className="text-slate-500 text-xs">© 2025 Donna AI</p>
-                <p className="text-slate-500 text-xs font-medium flex items-center gap-1">Made with <span className="text-red-500 animate-pulse">❤</span> in India</p>
-            </div>
+            <div className="border-t border-slate-200 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-xs"><p>© 2025 Donna AI Technologies Pvt Ltd.</p><p className="flex items-center gap-1">Made with <span className="text-red-500 animate-pulse">❤</span> in India</p></div>
         </div>
       </footer>
 
-      {/* --- 10. PARTNER MODAL (The Exclusive Layer) --- */}
+      {/* --- 10. MODALS --- */}
       <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
+      <BookDemoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
     </main>
   );
 }
