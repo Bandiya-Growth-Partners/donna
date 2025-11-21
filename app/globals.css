@@ -1,26 +1,36 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Light Theme: Crisp Porcelain */
+    --bg-color: #F8FAFC;
+    --text-main: #0F172A;
+    --text-muted: #475569;
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --border-color: rgba(226, 232, 240, 0.8); 
+    --input-bg: #FFFFFF;
+  }
+  .dark {
+    /* Dark Theme: Deep Void */
+    --bg-color: #020205;
+    --text-main: #FFFFFF;
+    --text-muted: #94A3B8;
+    --card-bg: rgba(10, 10, 15, 0.6);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --input-bg: rgba(255, 255, 255, 0.05);
+  }
+  body {
+    @apply bg-[var(--bg-color)] text-[var(--text-main)] antialiased selection:bg-brand-purple selection:text-white;
+    transition: background-color 0.5s ease, color 0.5s ease;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Utilities */
+.glass-card {
+  @apply bg-[var(--card-bg)] backdrop-blur-xl border border-[var(--border-color)] shadow-sm transition-all duration-300;
+}
+.text-liquid {
+  @apply bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-purple bg-[length:200%_auto] bg-clip-text text-transparent animate-flow;
 }
