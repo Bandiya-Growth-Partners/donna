@@ -10,7 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // Connects to the variables defined in layout.tsx
         sans: ['var(--font-jakarta)', 'sans-serif'],
         mono: ['var(--font-jetbrains)', 'monospace'],
       },
@@ -18,7 +17,6 @@ const config: Config = {
         brand: {
           purple: '#8B5CF6',
           cyan: '#06B6D4',
-          pink: '#EC4899',
           gold: '#F59E0B',
           amber: '#D97706',
         }
@@ -26,10 +24,9 @@ const config: Config = {
       animation: {
         'blob': 'blob 20s infinite alternate',
         'flow': 'flow 6s linear infinite',
-        'marquee': 'marquee 40s linear infinite',
+        'marquee': 'marquee 60s linear infinite', // Slower for better readability
         'gold-shimmer': 'goldShimmer 3s ease-in-out infinite',
         'float': 'float 6s ease-in-out infinite',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         blob: {
@@ -45,7 +42,7 @@ const config: Config = {
         },
         marquee: {
           '0%': { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-100%)' }
+          '100%': { transform: 'translateX(-50%)' } // ✅ CHANGED TO -50% FOR SEAMLESS LOOP
         },
         goldShimmer: {
           '0%': { transform: 'translateX(-150%) skewX(-20deg)' },

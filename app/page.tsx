@@ -2,11 +2,13 @@
 
 import { motion, useScroll, useTransform, useInView, Variants } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
+import PartnershipModal from "@/components/PartnershipModal";
 import Navbar from "@/components/Navbar";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { 
   Shield, Bot, Briefcase, CheckCircle, ArrowRight, Zap, Activity, 
-  UploadCloud, Check, Star 
+  UploadCloud, Check, Star, 
+  Crown
 } from "lucide-react";
 
 // --- ANIMATION VARIANTS ---
@@ -75,7 +77,7 @@ export default function Home() {
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success">("idle");
 
   // ... inside Home() component
-
+  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormStatus("submitting");
@@ -308,7 +310,16 @@ export default function Home() {
                     <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">Join the <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-500 to-amber-600">Inner Circle</span></h2>
                     <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">We are selecting 20 forward-thinking IPR Firms for white-glove onboarding, custom feature requests, and zero migration costs.</p>
                     <div className="flex flex-col items-center gap-6">
-                        <a href="#contact" className="px-12 py-4 bg-gradient-to-b from-amber-400 to-amber-600 rounded-xl text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(245,158,11,0.3)]">Apply for Partnership</a>
+                        
+                        {/* UPDATED BUTTON FOR EXCLUSIVITY */}
+                        <button 
+                            onClick={() => setIsPartnerModalOpen(true)}
+                            className="px-12 py-4 bg-gradient-to-b from-amber-400 to-amber-600 rounded-xl text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(245,158,11,0.3)] flex items-center gap-2"
+                        >
+                            <Crown size={20} className="text-black" />
+                            Apply for Partnership
+                        </button>
+
                         <div className="flex items-center gap-3 text-sm font-mono bg-white/5 border border-white/10 rounded-lg px-4 py-2">
                             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span>
                             <span className="text-gray-300">Only <span className="text-white font-bold">3</span> of <span className="text-gray-500">20</span> spots remaining</span>
@@ -319,16 +330,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- 5. TESTIMONIALS --- */}
+      {/* ADD THE MODAL HERE */}
+      <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
+
+      {/* --- 5. TESTIMONIALS (Future State) --- */}
       <section className="py-24 overflow-hidden border-y border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01]">
-        <div className="text-center mb-12"><h2 className="text-3xl font-bold">Trusted by <span className="text-brand-purple">IP Leaders</span></h2></div>
+        <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">What You'll Say <span className="text-brand-purple">Next Month</span></h2>
+        </div>
         <div className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="flex gap-8 w-max animate-marquee hover:[animation-play-state:paused] px-4">
-                {[1, 2, 3, 4, 1, 2].map((i, idx) => (
-                    <div key={idx} className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-8 rounded-2xl w-[350px] backdrop-blur-sm hover:border-brand-purple transition-colors">
-                        <div className="flex text-brand-purple mb-4 gap-1"><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /></div>
-                        <p className="text-slate-600 dark:text-slate-300 italic mb-6 text-sm leading-relaxed">"The sync accuracy is 100%. We caught a hearing date that wasn't in our manual diary. Donna is indispensable."</p>
-                        <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center font-bold text-xs">RK</div><div><div className="font-bold text-sm">Rajesh Kumar</div><div className="text-xs text-slate-500">Managing Partner</div></div></div>
+                {[
+                    {
+                        text: "It almost feels illegal to draft this fast. I finished a provisional specification before my chai got cold. My billing hours might drop, but my sanity is at an all-time high.",
+                        author: "You (Probably)",
+                        role: "After using Draft Factory"
+                    },
+                    {
+                        text: "My biggest corporate client asked how we manage to update their portfolio status at 2 AM. I didn't have the heart to tell them I was asleep and Donna did it.",
+                        author: "Future You",
+                        role: "After enabling Client Pulse"
+                    },
+                    {
+                        text: "Breaking up with my Excel sheets was emotional, but necessary. Donna organizes my chaos better than I ever could. It’s like having a super-organized partner who never sleeps.",
+                        author: "You",
+                        role: "1 Week after Migration"
+                    },
+                    {
+                        text: "Donna is the only associate in my firm who works weekends, never complains about the workload, and doesn't ask for a Diwali bonus. Don't tell my juniors I said that.",
+                        author: "You (Secretly)",
+                        role: "Managing Partner"
+                    },
+                    {
+                        text: "I walked into a pitch meeting with an iPad showing their live portfolio analytics. The other firm walked in with a printed spreadsheet. Guess who won the retainer?",
+                        author: "You",
+                        role: "Closing a Deal"
+                    },
+                    {
+                        text: "I used to check the IPO website 5 times a day out of paranoia. Now I just wait for the Donna notification. It's the best sleep insurance I've ever bought.",
+                        author: "You",
+                        role: "Relaxing on a Sunday"
+                    }
+                ].map((item, idx) => (
+                    <div key={idx} className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-8 rounded-2xl w-[400px] backdrop-blur-sm hover:border-brand-purple transition-colors cursor-default group">
+                        <div className="flex text-brand-purple mb-4 gap-1">
+                            <Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" />
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-300 italic mb-6 text-sm leading-relaxed">"{item.text}"</p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center font-bold text-white text-xs shadow-lg">
+                                {item.author.charAt(0)}
+                            </div>
+                            <div>
+                                <div className="font-bold text-slate-900 dark:text-white text-sm">{item.author}</div>
+                                <div className="text-xs text-slate-500">{item.role}</div>
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>
