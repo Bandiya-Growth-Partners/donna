@@ -2,14 +2,47 @@
 
 import { motion, useScroll, useTransform, useInView, Variants } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
-import PartnershipModal from "@/components/PartnershipModal";
 import Navbar from "@/components/Navbar";
 import SpotlightCard from "@/components/ui/SpotlightCard";
+import PartnershipModal from "@/components/PartnershipModal";
 import { 
   Shield, Bot, Briefcase, CheckCircle, ArrowRight, Zap, Activity, 
-  UploadCloud, Check, Star, 
-  Crown
+  UploadCloud, Check, Star, Crown, Smartphone 
 } from "lucide-react";
+
+// --- CONSTANTS ---
+const TESTIMONIAL_DATA = [
+  {
+      text: "It almost feels illegal to draft this fast. I finished a provisional specification before my chai got cold. My billing hours might drop, but my sanity is at an all-time high.",
+      author: "You (Probably)",
+      role: "After using Draft Factory"
+  },
+  {
+      text: "My biggest corporate client asked how we manage to update their portfolio status at 2 AM. I didn't have the heart to tell them I was asleep and Donna did it.",
+      author: "Future You",
+      role: "After enabling Client Pulse"
+  },
+  {
+      text: "Breaking up with my Excel sheets was emotional, but necessary. Donna organizes my chaos better than I ever could. It’s like having a super-organized partner who never sleeps.",
+      author: "You",
+      role: "1 Week after Migration"
+  },
+  {
+      text: "Donna is the only associate in my firm who works weekends, never complains about the workload, and doesn't ask for a Diwali bonus. Don't tell my juniors I said that.",
+      author: "You (Secretly)",
+      role: "Managing Partner"
+  },
+  {
+      text: "I walked into a pitch meeting with an iPad showing their live portfolio analytics. The other firm walked in with a printed spreadsheet. Guess who won the retainer?",
+      author: "You",
+      role: "Closing a Deal"
+  },
+  {
+      text: "I used to check the IPO website 5 times a day out of paranoia. Now I just wait for the Donna notification. It's the best sleep insurance I've ever bought.",
+      author: "You",
+      role: "Relaxing on a Sunday"
+  }
+];
 
 // --- ANIMATION VARIANTS ---
 const fadeInUp: Variants = {
@@ -32,11 +65,12 @@ export default function Home() {
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
+  // --- MODAL STATE ---
+  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+
   // --- SMART LOADER LOGIC ---
   const integrationRef = useRef(null);
-  // TRIGGER FIX: 'amount: 0.5' ensures animation starts only when 50% of section is visible
   const isIntegrationInView = useInView(integrationRef, { once: true, amount: 0.5 }); 
-  
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("WAITING FOR INPUT...");
 
@@ -46,7 +80,6 @@ export default function Home() {
       setUploadStatus("INITIALIZING SECURE CONNECTION...");
       
       const timer = setInterval(() => {
-        // Non-linear progress for realism (Fast start -> Slow middle -> Fast finish)
         const increment = currentProgress < 30 ? 2 : currentProgress < 80 ? 0.5 : 5;
         currentProgress += increment;
 
@@ -56,13 +89,12 @@ export default function Home() {
           clearInterval(timer);
         } else {
           setUploadProgress(currentProgress);
-          // Dynamic status updates targeting "Tech Enthusiast" persona
           if (currentProgress > 10 && currentProgress < 30) setUploadStatus("ENCRYPTING DATA PACKETS...");
           else if (currentProgress > 30 && currentProgress < 60) setUploadStatus("PARSING PATENT CLAIMS (AI)...");
           else if (currentProgress > 60 && currentProgress < 90) setUploadStatus("SYNCING WITH IPO DATABASE...");
           else if (currentProgress > 90) setUploadStatus("FINALIZING DOCKET...");
         }
-      }, 50); // Update every 50ms
+      }, 50);
 
       return () => clearInterval(timer);
     }
@@ -73,11 +105,9 @@ export default function Home() {
   const [rate, setRate] = useState(4000);
   const [hours, setHours] = useState(20);
   
-  // --- FORM STATE ---
+  // --- CONTACT FORM LOGIC ---
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success">("idle");
 
-  // ... inside Home() component
-  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormStatus("submitting");
@@ -95,14 +125,13 @@ export default function Home() {
 
       if (res.ok) {
         setFormStatus("success");
-        // Optional: Reset form or show success message
       } else {
-        console.error("Submission failed");
+        alert("Submission failed. Please try again.");
         setFormStatus("idle");
-        alert("Failed to submit. Please check your connection.");
       }
     } catch (error) {
       console.error(error);
+      alert("Network error.");
       setFormStatus("idle");
     }
   };
@@ -149,7 +178,7 @@ export default function Home() {
             initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
           >
-            The intelligent platform for high-growth IPR firms. 
+            The intelligence platform for high-growth IPR firms. 
             Automate <strong className="text-slate-900 dark:text-white">docketing</strong>, accelerate <strong className="text-slate-900 dark:text-white">drafting</strong>, and own your data.
           </motion.p>
 
@@ -167,7 +196,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
 
-        {/* 3D DASHBOARD */}
+        {/* 3D DASHBOARD PARALLAX */}
         <motion.div 
           initial={{ opacity: 0, rotateX: 20, y: 100 }}
           animate={{ opacity: 1, rotateX: 0, y: 0 }}
@@ -230,8 +259,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- 3. SEAMLESS INTEGRATION --- */}
-      <section id="integration" className="py-24 lg:py-32 border-y border-slate-200 dark:border-white/5 bg-slate-100/50 dark:bg-white/[0.01]">
+      {/* --- 3. SEAMLESS INTEGRATION (DYNAMIC LOADER) --- */}
+      <section id="integration" ref={integrationRef} className="py-24 lg:py-32 border-y border-slate-200 dark:border-white/5 bg-slate-100/50 dark:bg-white/[0.01]">
          <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-start">
              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="sticky top-32">
                  <motion.div variants={fadeInUp} className="inline-block mb-4">
@@ -257,9 +286,7 @@ export default function Home() {
                  </div>
              </motion.div>
 
-             {/* REFINED DYNAMIC LOADER */}
              <motion.div 
-               ref={integrationRef}
                initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}
                className="bg-white dark:bg-[#0A0A0F] border border-slate-200 dark:border-white/10 p-8 md:p-12 rounded-3xl text-center relative shadow-2xl backdrop-blur-md mt-8 md:mt-0"
              >
@@ -300,18 +327,24 @@ export default function Home() {
          </div>
       </section>
 
-      {/* --- 4. PARTNER PROGRAM --- */}
+      {/* --- 4. PARTNER PROGRAM (GOLD CARD) --- */}
       <section className="py-32 relative px-6">
         <div className="max-w-5xl mx-auto">
             <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border border-amber-500/20 bg-[#050505]">
                 <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,transparent_0%,rgba(245,158,11,0.15)_50%,transparent_100%)] animate-gold-shimmer z-10 pointer-events-none"></div>
+                
                 <div className="relative p-12 md:p-20 text-center z-20">
-                    <div className="inline-block border border-amber-500/50 bg-amber-900/20 rounded-full px-5 py-2 mb-8 backdrop-blur-md"><span className="text-amber-400 font-bold tracking-widest text-xs uppercase">Founding Partner Program</span></div>
-                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">Join the <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-500 to-amber-600">Inner Circle</span></h2>
-                    <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">We are selecting 20 forward-thinking IPR Firms for white-glove onboarding, custom feature requests, and zero migration costs.</p>
+                    <div className="inline-block border border-amber-500/50 bg-amber-900/20 rounded-full px-5 py-2 mb-8 backdrop-blur-md">
+                        <span className="text-amber-400 font-bold tracking-widest text-xs uppercase">Founding Partner Program</span>
+                    </div>
+                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                        Join the <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-500 to-amber-600">Inner Circle</span>
+                    </h2>
+                    <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                        We are selecting 20 forward-thinking IPR Firms for white-glove onboarding, custom feature requests, and zero migration costs.
+                    </p>
                     <div className="flex flex-col items-center gap-6">
-                        
-                        {/* UPDATED BUTTON FOR EXCLUSIVITY */}
+                        {/* Triggers the Exclusive Modal */}
                         <button 
                             onClick={() => setIsPartnerModalOpen(true)}
                             className="px-12 py-4 bg-gradient-to-b from-amber-400 to-amber-600 rounded-xl text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(245,158,11,0.3)] flex items-center gap-2"
@@ -321,7 +354,10 @@ export default function Home() {
                         </button>
 
                         <div className="flex items-center gap-3 text-sm font-mono bg-white/5 border border-white/10 rounded-lg px-4 py-2">
-                            <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span>
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
                             <span className="text-gray-300">Only <span className="text-white font-bold">3</span> of <span className="text-gray-500">20</span> spots remaining</span>
                         </div>
                     </div>
@@ -330,61 +366,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ADD THE MODAL HERE */}
-      <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
-
-      {/* --- 5. TESTIMONIALS (Future State) --- */}
+      {/* --- 5. TESTIMONIALS (INFINITE LOOP) --- */}
       <section className="py-24 overflow-hidden border-y border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01]">
         <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">What You'll Say <span className="text-brand-purple">Next Month</span></h2>
         </div>
         <div className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="flex gap-8 w-max animate-marquee hover:[animation-play-state:paused] px-4">
-                {[
-                    {
-                        text: "It almost feels illegal to draft this fast. I finished a provisional specification before my chai got cold. My billing hours might drop, but my sanity is at an all-time high.",
-                        author: "You (Probably)",
-                        role: "After using Draft Factory"
-                    },
-                    {
-                        text: "My biggest corporate client asked how we manage to update their portfolio status at 2 AM. I didn't have the heart to tell them I was asleep and Donna did it.",
-                        author: "Future You",
-                        role: "After enabling Client Pulse"
-                    },
-                    {
-                        text: "Breaking up with my Excel sheets was emotional, but necessary. Donna organizes my chaos better than I ever could. It’s like having a super-organized partner who never sleeps.",
-                        author: "You",
-                        role: "1 Week after Migration"
-                    },
-                    {
-                        text: "Donna is the only associate in my firm who works weekends, never complains about the workload, and doesn't ask for a Diwali bonus. Don't tell my juniors I said that.",
-                        author: "You (Secretly)",
-                        role: "Managing Partner"
-                    },
-                    {
-                        text: "I walked into a pitch meeting with an iPad showing their live portfolio analytics. The other firm walked in with a printed spreadsheet. Guess who won the retainer?",
-                        author: "You",
-                        role: "Closing a Deal"
-                    },
-                    {
-                        text: "I used to check the IPO website 5 times a day out of paranoia. Now I just wait for the Donna notification. It's the best sleep insurance I've ever bought.",
-                        author: "You",
-                        role: "Relaxing on a Sunday"
-                    }
-                ].map((item, idx) => (
+                {[...TESTIMONIAL_DATA, ...TESTIMONIAL_DATA].map((item, idx) => (
                     <div key={idx} className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-8 rounded-2xl w-[400px] backdrop-blur-sm hover:border-brand-purple transition-colors cursor-default group">
-                        <div className="flex text-brand-purple mb-4 gap-1">
-                            <Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" />
-                        </div>
+                        <div className="flex text-brand-purple mb-4 gap-1"><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /><Star size={16} fill="currentColor" /></div>
                         <p className="text-slate-600 dark:text-slate-300 italic mb-6 text-sm leading-relaxed">"{item.text}"</p>
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center font-bold text-white text-xs shadow-lg">
-                                {item.author.charAt(0)}
-                            </div>
-                            <div>
-                                <div className="font-bold text-slate-900 dark:text-white text-sm">{item.author}</div>
-                                <div className="text-xs text-slate-500">{item.role}</div>
-                            </div>
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center font-bold text-white text-xs shadow-lg">{item.author.charAt(0)}</div>
+                            <div><div className="font-bold text-slate-900 dark:text-white text-sm">{item.author}</div><div className="text-xs text-slate-500">{item.role}</div></div>
                         </div>
                     </div>
                 ))}
@@ -509,12 +504,17 @@ export default function Home() {
                              <input name="name" required className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all" />
                          </div>
                          <div className="space-y-2">
-                             <label className="text-xs font-bold uppercase text-slate-500 ml-1">Firm</label>
-                             <input name="firm" required className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all" />
+                             <label className="text-xs font-bold uppercase text-slate-500 ml-1">Phone (WhatsApp)</label>
+                             {/* ADDED PHONE FIELD */}
+                             <input name="phone" required placeholder="+91..." className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all" />
                          </div>
                       </div>
                       <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase text-slate-500 ml-1">Email</label>
+                          <label className="text-xs font-bold uppercase text-slate-500 ml-1">Firm Name</label>
+                          <input name="firm" required className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all" />
+                      </div>
+                      <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase text-slate-500 ml-1">Email Address</label>
                           <input name="email" type="email" required className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all" />
                       </div>
                       <button 
@@ -542,11 +542,14 @@ export default function Home() {
                 <div><h4 className="font-bold mb-6 text-slate-900 dark:text-white">Newsletter</h4><div className="flex gap-2"><input type="email" placeholder="Email" className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm w-full focus:outline-none" /><button className="bg-brand-purple text-white px-4 py-2 rounded-lg text-sm font-bold">Go</button></div></div>
             </div>
             <div className="border-t border-slate-200 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p className="text-slate-500 text-xs">© 2025 Donna AI Technologies Pvt Ltd.</p>
+                <p className="text-slate-500 text-xs">© 2025 Donna AI</p>
                 <p className="text-slate-500 text-xs font-medium flex items-center gap-1">Made with <span className="text-red-500 animate-pulse">❤</span> in India</p>
             </div>
         </div>
       </footer>
+
+      {/* --- 10. PARTNER MODAL (The Exclusive Layer) --- */}
+      <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     </main>
   );
 }
