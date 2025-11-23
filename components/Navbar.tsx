@@ -62,6 +62,9 @@ export default function Navbar({ onBookDemo }: NavbarProps) {
                 {item.name}
               </Link>
             ))}
+            <Link href="https://patents.donna-ai.in" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-brand-purple transition-colors">
+              User Login
+            </Link>
             <Link href="/admin" className="text-sm font-medium text-brand-gold hover:text-amber-500 transition-colors">
                Admin Login
             </Link>
@@ -114,6 +117,13 @@ export default function Navbar({ onBookDemo }: NavbarProps) {
                   {item.name}
                 </Link>
               ))}
+              <Link 
+                href="https://patents.donna-ai.in" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-lg font-medium text-slate-900 dark:text-white hover:text-brand-purple"
+              >
+                User Login
+              </Link>
               <Link 
                 href="/admin" 
                 onClick={() => setMobileMenuOpen(false)}
